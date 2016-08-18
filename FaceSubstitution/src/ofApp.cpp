@@ -1,12 +1,12 @@
-#include "testApp.h"
+#include "ofApp.h"
 
 using namespace ofxCv;
 
-const int testApp::lines [] = {22,27,27,21,21,22,22,23,23,21,21,20,20,23,23,24,24,25,25,26,26,16,16,15,15,14,14,13,13,12,12,11,11,10,10,9,9,8,8,7,7,6,6,5,5,4,4,3,3,2,2,1,1,0,0,17,17,18,18,19,19,20,27,28,28,29,29,30,30,31,30,32,30,33,30,34,30,35,35,34,34,33,33,32,32,31,31,48,31,49,31,50,32,50,33,50,33,51,33,52,34,52,35,52,35,53,35,54,48,49,49,50,50,51,51,52,52,53,53,54,54,55,55,56,56,57,57,58,58,59,59,48,48,60,60,61,61,62,62,54,54,63,63,64,64,65,65,48,49,60,60,50,50,61,61,51,61,52,52,62,62,53,55,63,63,56,56,64,64,57,64,58,58,65,65,59,36,37,37,38,38,39,39,40,40,41,41,36,42,43,43,44,44,45,45,46,46,47,47,42,27,42,42,22,42,23,43,23,43,24,43,25,44,25,44,26,45,26,45,16,45,15,46,15,46,14,47,14,29,47,47,28,28,42,27,39,39,21,39,20,38,20,38,19,38,18,37,18,37,17,36,17,36,0,36,1,41,1,41,2,40,2,2,29,29,40,40,28,28,39,29,31,31,3,3,29,29,14,14,35,35,29,3,48,48,4,48,6,6,59,59,7,7,58,58,8,8,57,8,56,56,9,9,55,55,10,10,54,54,11,54,12,54,13,13,35};
+const int ofApp::lines [] = {22,27,27,21,21,22,22,23,23,21,21,20,20,23,23,24,24,25,25,26,26,16,16,15,15,14,14,13,13,12,12,11,11,10,10,9,9,8,8,7,7,6,6,5,5,4,4,3,3,2,2,1,1,0,0,17,17,18,18,19,19,20,27,28,28,29,29,30,30,31,30,32,30,33,30,34,30,35,35,34,34,33,33,32,32,31,31,48,31,49,31,50,32,50,33,50,33,51,33,52,34,52,35,52,35,53,35,54,48,49,49,50,50,51,51,52,52,53,53,54,54,55,55,56,56,57,57,58,58,59,59,48,48,60,60,61,61,62,62,54,54,63,63,64,64,65,65,48,49,60,60,50,50,61,61,51,61,52,52,62,62,53,55,63,63,56,56,64,64,57,64,58,58,65,65,59,36,37,37,38,38,39,39,40,40,41,41,36,42,43,43,44,44,45,45,46,46,47,47,42,27,42,42,22,42,23,43,23,43,24,43,25,44,25,44,26,45,26,45,16,45,15,46,15,46,14,47,14,29,47,47,28,28,42,27,39,39,21,39,20,38,20,38,19,38,18,37,18,37,17,36,17,36,0,36,1,41,1,41,2,40,2,2,29,29,40,40,28,28,39,29,31,31,3,3,29,29,14,14,35,35,29,3,48,48,4,48,6,6,59,59,7,7,58,58,8,8,57,8,56,56,9,9,55,55,10,10,54,54,11,54,12,54,13,13,35};
 
-void testApp::setup() {
+void ofApp::setup() {
 #ifdef TARGET_OSX
-	ofSetDataPathRoot("../../../data/");
+	//ofSetDataPathRoot("../data/");
 #endif
 	ofSetVerticalSync(true);
 	cloneReady = false;
@@ -25,7 +25,7 @@ void testApp::setup() {
 	selectArea = false;
 }
 
-void testApp::update() {
+void ofApp::update() {
 	cam.update();
 	if(cam.isFrameNew()) {
 		camTracker.update(toCv(cam));
@@ -49,15 +49,15 @@ void testApp::update() {
 			srcFbo.end();
 			
 			clone.setStrength(49);
-			clone.update(srcFbo.getTextureReference(),
-						 cam.getTextureReference(),
-						 maskFbo.getTextureReference());
+			clone.update(srcFbo.getTexture(),
+						 cam.getTexture(),
+						 maskFbo.getTexture());
 			
 		}
 	}
 }
 
-void testApp::draw() {
+void ofApp::draw() {
 	ofSetColor(255);
 	
 	int xOffset = cam.getWidth();
@@ -69,10 +69,10 @@ void testApp::draw() {
 	}
 	
 	if(!camTracker.getFound()) {
-		drawHighlightString("camera face not found", 10, 10);
+		ofDrawBitmapStringHighlight("camera face not found", 10, 10);
 	}
 	if(src.getWidth() == 0) {
-		drawHighlightString("drag an image here", 10, 30);
+		ofDrawBitmapStringHighlight("drag an image here", 10, 30);
 	}
 	
 	if (src.getWidth() > 0) {
@@ -83,7 +83,7 @@ void testApp::draw() {
 		for (int i = 0; i < sizeof(lines) / sizeof(int) - 1; i += 2) {
 			ofVec2f p0 = srcPoints[lines[i]];
 			ofVec2f p1 = srcPoints[lines[i+1]];
-			ofLine(xOffset + p0[0], p0[1], xOffset + p1[0], p1[1]);
+			ofDrawLine(xOffset + p0[0], p0[1], xOffset + p1[0], p1[1]);
 		}
 	}
 	
@@ -92,20 +92,20 @@ void testApp::draw() {
 		ofVec2f p = srcPoints[i];
 		
 		ofSetColor(255,128,0);
-		ofCircle(xOffset + p[0], p[1], 6);
+		ofDrawCircle(xOffset + p[0], p[1], 6);
 		
 		ofSetColor(255,255,255);
-		ofCircle(xOffset + p[0], p[1], 4);
+		ofDrawCircle(xOffset + p[0], p[1], 4);
 	}
 	
 	for (int i = 0; i < selectedPoints.size(); i++) {
 		ofVec2f p = srcPoints[selectedPoints[i]];
 		
 		ofSetColor(255,255,255);
-		ofCircle(xOffset + p[0], p[1], 6);
+		ofDrawCircle(xOffset + p[0], p[1], 6);
 		
 		ofSetColor(255,128,0);
-		ofCircle(xOffset + p[0], p[1], 4);
+		ofDrawCircle(xOffset + p[0], p[1], 4);
 	}
 	ofSetColor(255,255,255);
 	
@@ -115,33 +115,32 @@ void testApp::draw() {
 		
 		ofNoFill();
 		ofSetColor(255, 255, 255);
-		ofRect(startX, startY, mouseX - startX, mouseY - startY);
+		ofDrawRectangle(startX, startY, mouseX - startX, mouseY - startY);
 	}
 }
 
-void testApp::loadPoints(string filename) {
+void ofApp::loadPoints(string filename) {
 	ofFile file;
 	file.open(ofToDataPath(filename), ofFile::ReadWrite, false);
-	ofBuffer buff = file.readToBuffer();
-	
-	// Discard the header line.
-	if (!buff.isLastLine()) buff.getNextLine();
-	
-	srcPoints = vector<ofVec2f>();
-	
-	while (!buff.isLastLine()) {
-		string line = buff.getNextLine();
-		vector<string> tokens = ofSplitString(line, "\t");
-		srcPoints.push_back(ofVec2f(ofToFloat(tokens[0]), ofToFloat(tokens[1])));
-	}
+
+    ofBuffer buff = file.readToBuffer();
+    ofBuffer::Lines lines = buff.getLines();
+    ofBuffer::Line iter = lines.begin();
+    
+    srcPoints = vector<ofVec2f>();
+    while (iter != lines.end()) {
+        string line = *iter;
+        vector<string> tokens = ofSplitString(line, "\t");
+        srcPoints.push_back(ofVec2f(ofToFloat(tokens[0]), ofToFloat(tokens[1])));
+    }
 	cout << "Read " << filename << "." << endl;
 }
 
-void testApp::loadFace(string filename){
-	src.loadImage(filename);
+void ofApp::loadFace(string filename){
+	src.load(filename);
 }
 
-void testApp::dragEvent(ofDragInfo dragInfo) {
+void ofApp::dragEvent(ofDragInfo dragInfo) {
 	for (int i = 0; i < dragInfo.files.size(); i++) {
 		string filename = dragInfo.files[i];
 		vector<string> tokens = ofSplitString(filename, ".");
@@ -155,11 +154,11 @@ void testApp::dragEvent(ofDragInfo dragInfo) {
 	}
 }
 
-void testApp::mouseMoved(int x, int y ) {
+void ofApp::mouseMoved(int x, int y ) {
 	
 }
 
-void testApp::mouseDragged(int x, int y, int button) {
+void ofApp::mouseDragged(int x, int y, int button) {
 	int xOffset = cam.getWidth();
 	if (x < xOffset) {
 		
@@ -176,7 +175,7 @@ void testApp::mouseDragged(int x, int y, int button) {
 	}
 }
 
-void testApp::mousePressed(int x, int y, int button) {
+void ofApp::mousePressed(int x, int y, int button) {
 	mousePressedTime = ofGetSystemTime();
 	dragPointsToMouse.clear();
 	
@@ -222,7 +221,7 @@ void testApp::mousePressed(int x, int y, int button) {
 	}
 }
 
-void testApp::mouseReleased(int x, int y, int button) {
+void ofApp::mouseReleased(int x, int y, int button) {
 	int xOffset = cam.getWidth();
 	
 	if (selectArea) {
@@ -277,7 +276,7 @@ void testApp::mouseReleased(int x, int y, int button) {
 	dragPoints.clear();
 }
 
-void testApp::keyPressed(int key) {
+void ofApp::keyPressed(int key) {
 	ofFile file;
 	ofBuffer buff;
 	
@@ -316,5 +315,5 @@ void testApp::keyPressed(int key) {
 	}
 }
 
-void testApp::keyReleased(int key) {
+void ofApp::keyReleased(int key) {
 }
