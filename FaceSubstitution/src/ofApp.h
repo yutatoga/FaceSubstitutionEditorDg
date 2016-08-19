@@ -44,4 +44,8 @@ public:
 	static const int lines [];
 	
 	long mousePressedTime;
+
+    ofFbo myFbo;
+    
+    ofMesh  camMesh;
 };

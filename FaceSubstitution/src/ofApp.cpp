@@ -32,10 +32,116 @@ void ofApp::update() {
 		
 		cloneReady = camTracker.getFound();
 		if(cloneReady) {
-			ofMesh camMesh = camTracker.getImageMesh();
-			camMesh.clearTexCoords();
+            // cam
+            camMesh = camTracker.getImageMesh();
+            camMesh.clearTexCoords();
 			camMesh.addTexCoords(srcPoints);
-			
+            
+            ofVec2f camFaceCenter = camTracker.getPosition();
+            float camWidth = cam.getWidth(); //     default: 640
+            float camHeight = cam.getHeight();//    default: 480
+            ofVec2f camZero = ofVec2f(camFaceCenter.x-camWidth/2.0f, camFaceCenter.y-camHeight/2.0f);
+
+            // - step
+            float camStepUpperSide = camWidth/8.0f;
+            float camStepRightSide, camStepLeftSide;
+            camStepRightSide = camStepLeftSide = camHeight/5.0f;
+            float camStepLowerSide = camWidth/7.0f;
+            
+            // src
+            ofVec2f srcFaceCenter = srcTracker.getPosition();
+            float srcWidth = cam.getWidth(); // src.getWidth();
+            float srcHeight = cam.getHeight(); // src.getHeight();
+            ofVec2f srcZero = ofVec2f(srcFaceCenter.x-srcWidth/2.0f, srcFaceCenter.y-srcHeight/2.0f);
+            float srcStepUpperSide = srcWidth/8.0f;
+            float srcStepRightSide, srcStepLeftSide;
+            // - step
+            srcStepRightSide = srcStepLeftSide = srcHeight/5.0f;
+            float srcStepLowerSide = srcWidth/7.0f;
+            
+            // extra vertices and texCoods
+            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*4, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*4, srcZero.y));                     // 66 - upper center
+            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*5, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*5, srcZero.y));                     // 67
+            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*6, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*6, srcZero.y));                     // 68
+            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*7, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*7, srcZero.y));                     // 69
+            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y));                                         // 70 - upper right corner
+            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide));       // 71
+            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide*2)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide*2));   // 72
+            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide*3)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide*3));   // 73
+            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide*4)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide*4));   // 74
+            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcHeight));                     // 75 - lower right corner
+            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide*6, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*6, srcZero.y+srcHeight)); // 76
+            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide*5, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*5, srcZero.y+srcHeight)); // 77
+            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide*4, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*4, srcZero.y+srcHeight)); // 78
+            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide*3, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*3, srcZero.y+srcHeight)); // 79
+            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide*2, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*2, srcZero.y+srcHeight)); // 80
+            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide, srcZero.y+srcHeight));     // 81
+            camMesh.addVertex(ofVec2f(camZero.x, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcHeight));                                       // 82 - lower left corner
+            camMesh.addVertex(ofVec2f(camZero.x, camZero.y+camStepLeftSide*4)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide*4));                       // 83
+            camMesh.addVertex(ofVec2f(camZero.x, camZero.y+camStepLeftSide*3)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide*3));                       // 84
+            camMesh.addVertex(ofVec2f(camZero.x, camZero.y+camStepLeftSide*2)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide*2));                       // 85
+            camMesh.addVertex(ofVec2f(camZero.x, camZero.y+camStepLeftSide)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide));                           // 86
+            camMesh.addVertex(ofVec2f(camZero.x, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y));                                                           // 87 - upper left corner
+            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide, srcZero.y));                         // 88
+            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*2, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*2, srcZero.y));                     // 89
+            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*3, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*3, srcZero.y));                     // 90
+            
+            // extra indices
+            vector<ofIndexType> extraIndices
+            {
+                66,20,23,
+                66,23,67,
+                67,23,24,
+                67,24,68,
+                68,24,25,
+                68,25,69,
+                69,25,26,
+                69,26,70,
+                70,26,16,
+                70,16,71,
+                71,16,15,
+                71,15,72,
+                72,15,14,
+                72,14,73,
+                73,14,13,
+                73,13,74,
+                74,13,12,
+                74,12,75,
+                75,12,11,
+                75,11,76,
+                76,10,11,
+                77,10,76,
+                77,9,10,
+                78,9,77,
+                78,8,9,
+                79,8,78,
+                79,7,8,
+                80,7,79,
+                80,6,7,
+                81,6,80,
+                81,5,6,
+                82,5,81,
+                82,5,4,
+                82,4,83,
+                83,4,3,
+                84,83,3,
+                84,3,2,
+                85,84,2,
+                85,2,1,
+                86,85,1,
+                86,1,0,
+                87,86,0,
+                87,0,17,
+                88,87,17,
+                88,17,18,
+                89,88,18,
+                89,18,19,
+                90,89,19,
+                90,19,20,
+                66,90,20
+            };
+            camMesh.addIndices(extraIndices);
+
 			maskFbo.begin();
 			ofClear(0, 255);
 			camMesh.draw();
@@ -48,7 +154,7 @@ void ofApp::update() {
 			src.unbind();
 			srcFbo.end();
 			
-			clone.setStrength(49);
+			clone.setStrength(49); // how much mix the substitution
 			clone.update(srcFbo.getTexture(),
 						 cam.getTexture(),
 						 maskFbo.getTexture());
@@ -117,6 +223,9 @@ void ofApp::draw() {
 		ofSetColor(255, 255, 255);
 		ofDrawRectangle(startX, startY, mouseX - startX, mouseY - startY);
 	}
+    
+    //debug
+    //camMesh.drawWireframe();
 }
 
 void ofApp::loadPoints(string filename) {
@@ -283,7 +392,9 @@ void ofApp::keyPressed(int key) {
 	switch (key) {
 		case 'q': // Read point locations from source image.
 			if(src.getWidth() > 0) {
-				srcTracker.update(toCv(src));
+                ofImage graySrc = src;
+                graySrc.setImageType(ofImageType::OF_IMAGE_COLOR);
+				srcTracker.update(toCv(graySrc));
 				srcPoints = srcTracker.getImagePoints();
 			}
 			cout << "Calculated points from source image." << endl;
