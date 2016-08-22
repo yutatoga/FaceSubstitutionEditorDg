@@ -5,6 +5,7 @@
 #include "Clone.h"
 #include "ofxFaceTracker.h"
 #include "ofxFaceTrackerThreaded.h"
+#include "ofxGui.h"
 
 #include <limits>
 
@@ -48,4 +49,10 @@ public:
     ofFbo myFbo;
     
     ofMesh  camMesh;
+    
+    //gui
+    bool showGui;
+    ofxPanel panel;
+    ofParameter<bool> showCamMeshWireFrame;
+    ofParameter<float> mixStrength;
 };

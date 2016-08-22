@@ -23,6 +23,12 @@ void ofApp::setup() {
 	srcTracker.setAttempts(4);
 	
 	selectArea = false;
+    
+    // gui
+    showGui = true;
+    panel.setup();
+    panel.add(showCamMeshWireFrame.set("showCamMeshWireFrame", false));
+    panel.add(mixStrength.set("mixStrength", 50, 0, 500));
 }
 
 void ofApp::update() {
@@ -38,8 +44,8 @@ void ofApp::update() {
 			camMesh.addTexCoords(srcPoints);
             
             ofVec2f camFaceCenter = camTracker.getPosition();
-            float camWidth = cam.getWidth(); //     default: 640
-            float camHeight = cam.getHeight();//    default: 480
+            float camWidth = cam.getWidth();
+            float camHeight = cam.getHeight();
             ofVec2f camZero = ofVec2f(camFaceCenter.x-camWidth/2.0f, camFaceCenter.y-camHeight/2.0f);
 
             // - step
@@ -143,18 +149,18 @@ void ofApp::update() {
             camMesh.addIndices(extraIndices);
 
 			maskFbo.begin();
-			ofClear(0, 255);
+			ofClear(0, 0);
 			camMesh.draw();
 			maskFbo.end();
 			
 			srcFbo.begin();
-			ofClear(0, 255);
+			ofClear(0, 0);
 			src.bind();
 			camMesh.draw();
 			src.unbind();
 			srcFbo.end();
 			
-			clone.setStrength(49); // how much mix the substitution
+			clone.setStrength(mixStrength); // how much mix the substitution
 			clone.update(srcFbo.getTexture(),
 						 cam.getTexture(),
 						 maskFbo.getTexture());
@@ -169,16 +175,26 @@ void ofApp::draw() {
 	int xOffset = cam.getWidth();
 	
 	if(src.getWidth() > 0 && cloneReady) {
-		clone.draw(0, 0);
+		// 1. mix with blur
+        // clone.draw(0, 0);
+        
+        // 2. not using blur
+        // draw webcam
+        cam.draw(0, 0);
+        
+        // draw substitution
+        src.bind();
+        camMesh.draw();
+        src.unbind();
 	} else {
 		cam.draw(0, 0);
 	}
 	
 	if(!camTracker.getFound()) {
-		ofDrawBitmapStringHighlight("camera face not found", 10, 10);
+		ofDrawBitmapStringHighlight("camera face not found", 5, cam.getHeight()-5);
 	}
 	if(src.getWidth() == 0) {
-		ofDrawBitmapStringHighlight("drag an image here", 10, 30);
+		ofDrawBitmapStringHighlight("drag an image here", ofGetWidth()*0.75 - 50, ofGetHeight()/2.0f);
 	}
 	
 	if (src.getWidth() > 0) {
@@ -224,8 +240,12 @@ void ofApp::draw() {
 		ofDrawRectangle(startX, startY, mouseX - startX, mouseY - startY);
 	}
     
+    
     //debug
-    //camMesh.drawWireframe();
+    if (showCamMeshWireFrame) camMesh.drawWireframe();
+    
+    // gui
+    if (showGui) panel.draw();
 }
 
 void ofApp::loadPoints(string filename) {
@@ -390,6 +410,9 @@ void ofApp::keyPressed(int key) {
 	ofBuffer buff;
 	
 	switch (key) {
+        case 'h': // hide or show gui
+            showGui = !showGui;
+            break;
 		case 'q': // Read point locations from source image.
 			if(src.getWidth() > 0) {
                 ofImage graySrc = src;
