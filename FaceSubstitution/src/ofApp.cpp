@@ -4,24 +4,28 @@ using namespace ofxCv;
 
 const int ofApp::lines [] = {22,27,27,21,21,22,22,23,23,21,21,20,20,23,23,24,24,25,25,26,26,16,16,15,15,14,14,13,13,12,12,11,11,10,10,9,9,8,8,7,7,6,6,5,5,4,4,3,3,2,2,1,1,0,0,17,17,18,18,19,19,20,27,28,28,29,29,30,30,31,30,32,30,33,30,34,30,35,35,34,34,33,33,32,32,31,31,48,31,49,31,50,32,50,33,50,33,51,33,52,34,52,35,52,35,53,35,54,48,49,49,50,50,51,51,52,52,53,53,54,54,55,55,56,56,57,57,58,58,59,59,48,48,60,60,61,61,62,62,54,54,63,63,64,64,65,65,48,49,60,60,50,50,61,61,51,61,52,52,62,62,53,55,63,63,56,56,64,64,57,64,58,58,65,65,59,36,37,37,38,38,39,39,40,40,41,41,36,42,43,43,44,44,45,45,46,46,47,47,42,27,42,42,22,42,23,43,23,43,24,43,25,44,25,44,26,45,26,45,16,45,15,46,15,46,14,47,14,29,47,47,28,28,42,27,39,39,21,39,20,38,20,38,19,38,18,37,18,37,17,36,17,36,0,36,1,41,1,41,2,40,2,2,29,29,40,40,28,28,39,29,31,31,3,3,29,29,14,14,35,35,29,3,48,48,4,48,6,6,59,59,7,7,58,58,8,8,57,8,56,56,9,9,55,55,10,10,54,54,11,54,12,54,13,13,35};
 
+ofVec2f ofApp::rotateCoord(ofVec2f p,float rad){
+    return ofVec2f(p.x*cos(rad)-p.y*sin(rad), p.x*sin(rad)+p.y*cos(rad));
+}
+
 void ofApp::setup() {
 #ifdef TARGET_OSX
 	//ofSetDataPathRoot("../data/");
 #endif
 	ofSetVerticalSync(true);
 	cloneReady = false;
-	cam.initGrabber(640, 480);
-	clone.setup(cam.getWidth(), cam.getHeight());
+	
+    cam.initGrabber(camWidth, camHeight);
+	clone.setup(camWidth, camHeight);
 	ofFbo::Settings settings;
-	settings.width = cam.getWidth();
-	settings.height = cam.getHeight();
+	settings.width = camWidth;
+	settings.height = camHeight;
 	maskFbo.allocate(settings);
 	srcFbo.allocate(settings);
 	camTracker.setup();
 	srcTracker.setup();
 	srcTracker.setIterations(25);
 	srcTracker.setAttempts(4);
-	
 	selectArea = false;
     
     // gui
@@ -35,19 +39,14 @@ void ofApp::update() {
 	cam.update();
 	if(cam.isFrameNew()) {
 		camTracker.update(toCv(cam));
-		
 		cloneReady = camTracker.getFound();
 		if(cloneReady) {
             // cam
             camMesh = camTracker.getImageMesh();
             camMesh.clearTexCoords();
 			camMesh.addTexCoords(srcPoints);
-            
             ofVec2f camFaceCenter = camTracker.getPosition();
-            float camWidth = cam.getWidth();
-            float camHeight = cam.getHeight();
-            ofVec2f camZero = ofVec2f(camFaceCenter.x-camWidth/2.0f, camFaceCenter.y-camHeight/2.0f);
-
+            ofVec2f camZero = ofVec2f(-camWidth/2.0, -camHeight/2.0); // for rotation
             // - step
             float camStepUpperSide = camWidth/8.0f;
             float camStepRightSide, camStepLeftSide;
@@ -56,8 +55,8 @@ void ofApp::update() {
             
             // src
             ofVec2f srcFaceCenter = srcTracker.getPosition();
-            float srcWidth = cam.getWidth(); // src.getWidth();
-            float srcHeight = cam.getHeight(); // src.getHeight();
+            float srcWidth = camWidth; // src.getWidth();
+            float srcHeight = camHeight; // src.getHeight();
             ofVec2f srcZero = ofVec2f(srcFaceCenter.x-srcWidth/2.0f, srcFaceCenter.y-srcHeight/2.0f);
             float srcStepUpperSide = srcWidth/8.0f;
             float srcStepRightSide, srcStepLeftSide;
@@ -65,32 +64,62 @@ void ofApp::update() {
             srcStepRightSide = srcStepLeftSide = srcHeight/5.0f;
             float srcStepLowerSide = srcWidth/7.0f;
             
-            // extra vertices and texCoods
-            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*4, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*4, srcZero.y));                     // 66 - upper center
-            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*5, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*5, srcZero.y));                     // 67
-            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*6, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*6, srcZero.y));                     // 68
-            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*7, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*7, srcZero.y));                     // 69
-            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y));                                         // 70 - upper right corner
-            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide));       // 71
-            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide*2)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide*2));   // 72
-            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide*3)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide*3));   // 73
-            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide*4)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide*4));   // 74
-            camMesh.addVertex(ofVec2f(camZero.x+camWidth, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcHeight));                     // 75 - lower right corner
-            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide*6, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*6, srcZero.y+srcHeight)); // 76
-            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide*5, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*5, srcZero.y+srcHeight)); // 77
-            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide*4, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*4, srcZero.y+srcHeight)); // 78
-            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide*3, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*3, srcZero.y+srcHeight)); // 79
-            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide*2, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*2, srcZero.y+srcHeight)); // 80
-            camMesh.addVertex(ofVec2f(camZero.x+camStepLowerSide, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide, srcZero.y+srcHeight));     // 81
-            camMesh.addVertex(ofVec2f(camZero.x, camZero.y+camHeight)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcHeight));                                       // 82 - lower left corner
-            camMesh.addVertex(ofVec2f(camZero.x, camZero.y+camStepLeftSide*4)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide*4));                       // 83
-            camMesh.addVertex(ofVec2f(camZero.x, camZero.y+camStepLeftSide*3)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide*3));                       // 84
-            camMesh.addVertex(ofVec2f(camZero.x, camZero.y+camStepLeftSide*2)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide*2));                       // 85
-            camMesh.addVertex(ofVec2f(camZero.x, camZero.y+camStepLeftSide)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide));                           // 86
-            camMesh.addVertex(ofVec2f(camZero.x, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y));                                                           // 87 - upper left corner
-            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide, srcZero.y));                         // 88
-            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*2, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*2, srcZero.y));                     // 89
-            camMesh.addVertex(ofVec2f(camZero.x+camStepUpperSide*3, camZero.y)); camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*3, srcZero.y));                     // 90
+            // face angle for rotation
+            float faceAngle = camTracker.getOrientation().z;
+
+            // vertices
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepUpperSide*4, camZero.y), faceAngle)  + camFaceCenter);           // 66 - upper center
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepUpperSide*5, camZero.y), faceAngle) + camFaceCenter);            // 67
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepUpperSide*6, camZero.y), faceAngle) + camFaceCenter);            // 68
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepUpperSide*7, camZero.y), faceAngle) + camFaceCenter);            // 69
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camWidth, camZero.y) , faceAngle) + camFaceCenter);                     // 70 - upper right corner
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide), faceAngle) + camFaceCenter);     // 71
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide*2), faceAngle) + camFaceCenter);   // 72
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide*3), faceAngle) + camFaceCenter);   // 73
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camWidth, camZero.y+camStepRightSide*4), faceAngle) + camFaceCenter);   // 74
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camWidth, camZero.y+camHeight) , faceAngle) + camFaceCenter);           // 75 - lower right corner
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepLowerSide*6, camZero.y+camHeight), faceAngle) + camFaceCenter);  // 76
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepLowerSide*5, camZero.y+camHeight), faceAngle) + camFaceCenter);  // 77
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepLowerSide*4, camZero.y+camHeight), faceAngle) + camFaceCenter);  // 78
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepLowerSide*3, camZero.y+camHeight), faceAngle) + camFaceCenter);  // 79
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepLowerSide*2, camZero.y+camHeight), faceAngle) + camFaceCenter);  // 80
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepLowerSide, camZero.y+camHeight), faceAngle) + camFaceCenter);    // 81
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x, camZero.y+camHeight) , faceAngle) + camFaceCenter);                    // 82 - lower left corner
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x, camZero.y+camStepLeftSide*4), faceAngle) + camFaceCenter);             // 83
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x, camZero.y+camStepLeftSide*3), faceAngle) + camFaceCenter);             // 84
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x, camZero.y+camStepLeftSide*2), faceAngle) + camFaceCenter);             // 85
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x, camZero.y+camStepLeftSide), faceAngle) + camFaceCenter);               // 86
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x, camZero.y), faceAngle) + camFaceCenter);                               // 87 - upper left corner
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepUpperSide, camZero.y), faceAngle) + camFaceCenter);              // 88
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepUpperSide*2, camZero.y), faceAngle) + camFaceCenter);            // 89
+            camMesh.addVertex(rotateCoord(ofVec2f(camZero.x+camStepUpperSide*3, camZero.y), faceAngle) + camFaceCenter);            // 90
+
+            // coords
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*4, srcZero.y));          // 66 - upper center
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*5, srcZero.y));          // 67
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*6, srcZero.y));          // 68
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*7, srcZero.y));          // 69
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y));                    // 70 - upper right corner
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide));   // 71
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide*2)); // 72
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide*3)); // 73
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcStepRightSide*4)); // 74
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcWidth, srcZero.y+srcHeight));          // 75 - lower right corner
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*6, srcZero.y+srcHeight));// 76
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*5, srcZero.y+srcHeight));// 77
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*4, srcZero.y+srcHeight));// 78
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*3, srcZero.y+srcHeight));// 79
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide*2, srcZero.y+srcHeight));// 80
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepLowerSide, srcZero.y+srcHeight));  // 81
+            camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcHeight));                   // 82 - lower left corner
+            camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide*4));           // 83
+            camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide*3));           // 84
+            camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide*2));           // 85
+            camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y+srcStepLeftSide));             // 86
+            camMesh.addTexCoord(ofVec2f(srcZero.x, srcZero.y));                             // 87 - upper left corner
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide, srcZero.y));            // 88
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*2, srcZero.y));          // 89
+            camMesh.addTexCoord(ofVec2f(srcZero.x+srcStepUpperSide*3, srcZero.y));          // 90
             
             // extra indices
             vector<ofIndexType> extraIndices

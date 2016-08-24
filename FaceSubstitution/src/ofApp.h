@@ -25,9 +25,13 @@ public:
 	void keyPressed(int key);
 	void keyReleased(int key);
 
+    ofVec2f rotateCoord(ofVec2f p,float rad);
+    
 	ofxFaceTrackerThreaded camTracker;
-	ofVideoGrabber cam;
-	
+    ofVideoGrabber cam;
+    const float camWidth = 640;
+    const float camHeight = 480;
+
 	ofxFaceTracker srcTracker;
 	ofImage src;
 	vector<ofVec2f> srcPoints;
