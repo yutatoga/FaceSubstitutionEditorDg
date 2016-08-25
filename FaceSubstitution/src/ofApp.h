@@ -65,6 +65,7 @@ public:
     bool showGui;
     ofxPanel panel;
     ofParameter<bool> showCamMeshWireFrame;
+    ofParameter<bool> enableBlurMix;
     ofParameter<float> mixStrength;
     ofParameter<float> substitutionCamScale;
     ofParameter<float> substitutionSrcScale;

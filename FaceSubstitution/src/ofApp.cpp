@@ -38,10 +38,11 @@ void ofApp::setup() {
     showGui = true;
     panel.setup();
     panel.add(showCamMeshWireFrame.set("showCamMeshWireFrame", false));
+    panel.add(enableBlurMix.set("enableBlurMix", false));
     panel.add(mixStrength.set("mixStrength", 50, 0, 500));
     panel.add(substitutionCamScale.set("substitutionCamScale", 2, 1, 10));
     panel.add(substitutionSrcScale.set("substitutionSrcScale", 1, 1, 10));
-    
+
     // image
     fixedFrontImage.load("logo.png");
 }
@@ -195,11 +196,6 @@ void ofApp::update() {
                 66,90,20
             };
             camMesh.addIndices(extraIndices);
-
-			maskFbo.begin();
-			ofClear(0, 0);
-			camMesh.draw();
-			maskFbo.end();
 			
             // mask for decolation
             decolationMaskFbo.begin();
@@ -252,18 +248,24 @@ void ofApp::update() {
             }
             decolationFbo.end();
             
-			srcFbo.begin();
-			ofClear(0, 0);
-			src.bind();
-			camMesh.draw();
-			src.unbind();
-			srcFbo.end();
-			
-			clone.setStrength(mixStrength); // how much mix the substitution
-			clone.update(srcFbo.getTexture(),
-						 cam.getTexture(),
-						 maskFbo.getTexture());
-			
+            if (enableBlurMix) {
+                maskFbo.begin();
+                ofClear(0, 255);
+                camMesh.draw();
+                maskFbo.end();
+                
+                srcFbo.begin();
+                ofClear(0, 255);
+                src.bind();
+                camMesh.draw();
+                src.unbind();
+                srcFbo.end();
+                
+                clone.setStrength(mixStrength); // how much mix the substitution
+                clone.update(srcFbo.getTexture(),
+                             mirroredCam.getTexture(),
+                             maskFbo.getTexture());
+            }
 		}
 	}
 }
@@ -274,21 +276,23 @@ void ofApp::draw() {
 	int xOffset = cam.getWidth();
 	
 	if(src.getWidth() > 0 && cloneReady) {
-		// 1. mix with blur
-        // clone.draw(0, 0);
-        
-        // 2. not using blur
-        // draw webcam
-        cam.draw(camWidth, 0, -camWidth, camHeight); // mirrored
-        
-        // decolation
-        decolationFbo.getTexture().setAlphaMask(decolationMaskFbo.getTexture());
-        decolationFbo.draw(0, 0);
-        
-        // draw substitution
-        src.bind();
-        camMesh.draw();
-        src.unbind();
+        if (enableBlurMix) {
+            // 1. mix with blur
+            clone.draw(0, 0);
+        } else {
+            // 2. not using blur
+            // draw webcam
+            cam.draw(camWidth, 0, -camWidth, camHeight); // mirrored
+            
+            // decolation
+            decolationFbo.getTexture().setAlphaMask(decolationMaskFbo.getTexture());
+            decolationFbo.draw(0, 0);
+            
+            // draw substitution
+            src.bind();
+            camMesh.draw();
+            src.unbind();
+        }
 	} else {
 		cam.draw(camWidth, 0, -camWidth, camHeight); // mirrored
 	}
