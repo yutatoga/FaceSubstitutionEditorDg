@@ -24,6 +24,10 @@ void ofApp::setup() {
 	settings.height = camHeight;
 	maskFbo.allocate(settings);
 	srcFbo.allocate(settings);
+    // decolation
+    decolationMaskFbo.allocate(settings);
+    decolationFbo.allocate(settings);
+    
 	camTracker.setup();
 	srcTracker.setup();
 	srcTracker.setIterations(25);
@@ -35,10 +39,14 @@ void ofApp::setup() {
     panel.setup();
     panel.add(showCamMeshWireFrame.set("showCamMeshWireFrame", false));
     panel.add(mixStrength.set("mixStrength", 50, 0, 500));
+    panel.add(substitutionCamScale.set("substitutionCamScale", 2, 1, 10));
+    panel.add(substitutionSrcScale.set("substitutionSrcScale", 1, 1, 10));
+    
+    // image
+    fixedFrontImage.load("logo.png");
 }
 
 void ofApp::update() {
-    
 	cam.update();
 	if(cam.isFrameNew()) {
         ofImage mirroredCam;
@@ -54,8 +62,8 @@ void ofApp::update() {
             ofVec2f camFaceCenter = camTracker.getPosition();
             float faceScale = camTracker.getScale();
             faceScale = ofClamp(faceScale, 0, 10);
-            substitutionWidth = ofMap(faceScale, 0, 10, 0, camWidth*2);
-            substitutionHeight = ofMap(faceScale, 0, 10, 0, camHeight*2);
+            substitutionWidth = ofMap(faceScale, 0, 10, 0, camWidth*substitutionCamScale);
+            substitutionHeight = ofMap(faceScale, 0, 10, 0, camHeight*substitutionCamScale);
             
             ofVec2f camZero = ofVec2f(-substitutionWidth/2.0, -substitutionHeight/2.0); // for rotation
             // - step
@@ -66,8 +74,8 @@ void ofApp::update() {
             
             // src
             ofVec2f srcFaceCenter = srcTracker.getPosition();
-            float srcWidth = camWidth; // src.getWidth();
-            float srcHeight = camHeight; // src.getHeight();
+            float srcWidth = camWidth * substitutionSrcScale; // src.getWidth();
+            float srcHeight = camHeight * substitutionSrcScale; // src.getHeight();
             ofVec2f srcZero = ofVec2f(srcFaceCenter.x-srcWidth/2.0f, srcFaceCenter.y-srcHeight/2.0f);
             float srcStepUpperSide = srcWidth/8.0f;
             float srcStepRightSide, srcStepLeftSide;
@@ -193,6 +201,57 @@ void ofApp::update() {
 			camMesh.draw();
 			maskFbo.end();
 			
+            // mask for decolation
+            decolationMaskFbo.begin();
+            ofClear(0, 0, 0, 0);
+            // mask path
+            ofPath maskPath;
+            maskPath.lineTo(0, 0);
+            maskPath.lineTo(camWidth, 0);
+            maskPath.lineTo(camWidth, camHeight);
+            maskPath.lineTo(0, camHeight);
+            maskPath.lineTo(0, 0);
+            maskPath.lineTo(camMesh.getVertex(0));
+            maskPath.lineTo(camMesh.getVertex(17));
+            maskPath.lineTo(camMesh.getVertex(18));
+            maskPath.lineTo(camMesh.getVertex(19));
+            maskPath.lineTo(camMesh.getVertex(20));
+            maskPath.lineTo(camMesh.getVertex(23));
+            maskPath.lineTo(camMesh.getVertex(24));
+            maskPath.lineTo(camMesh.getVertex(25));
+            maskPath.lineTo(camMesh.getVertex(26));
+            maskPath.lineTo(camMesh.getVertex(16));
+            maskPath.lineTo(camMesh.getVertex(15));
+            maskPath.lineTo(camMesh.getVertex(14));
+            maskPath.lineTo(camMesh.getVertex(13));
+            maskPath.lineTo(camMesh.getVertex(12));
+            maskPath.lineTo(camMesh.getVertex(11));
+            maskPath.lineTo(camMesh.getVertex(10));
+            maskPath.lineTo(camMesh.getVertex(9));
+            maskPath.lineTo(camMesh.getVertex(8));
+            maskPath.lineTo(camMesh.getVertex(7));
+            maskPath.lineTo(camMesh.getVertex(6));
+            maskPath.lineTo(camMesh.getVertex(5));
+            maskPath.lineTo(camMesh.getVertex(4));
+            maskPath.lineTo(camMesh.getVertex(3));
+            maskPath.lineTo(camMesh.getVertex(2));
+            maskPath.lineTo(camMesh.getVertex(1));
+            maskPath.lineTo(camMesh.getVertex(0));
+            maskPath.draw();
+            decolationMaskFbo.end();
+            
+            // decolation
+            decolationFbo.begin();
+            ofClear(0, 0, 0, 0);
+            // comic effect
+            float radius = max(camWidth, camHeight)*2;
+            for (float i = 0; i < TWO_PI; i+=0.2) {
+                ofDrawTriangle(camTracker.getPosition().x, camTracker.getPosition().y,
+                               camWidth/2.0f+radius*cos(i), camHeight/2.0f+radius*sin(i),
+                               camWidth/2.0f+radius*cos(i)+50, camHeight/2.0f+radius*sin(i)+50);
+            }
+            decolationFbo.end();
+            
 			srcFbo.begin();
 			ofClear(0, 0);
 			src.bind();
@@ -221,6 +280,10 @@ void ofApp::draw() {
         // 2. not using blur
         // draw webcam
         cam.draw(camWidth, 0, -camWidth, camHeight); // mirrored
+        
+        // decolation
+        decolationFbo.getTexture().setAlphaMask(decolationMaskFbo.getTexture());
+        decolationFbo.draw(0, 0);
         
         // draw substitution
         src.bind();
@@ -280,9 +343,14 @@ void ofApp::draw() {
 		ofDrawRectangle(startX, startY, mouseX - startX, mouseY - startY);
 	}
     
+    // image
+    fixedFrontImage.draw(0, 0);
     
     //debug
     if (showCamMeshWireFrame) camMesh.drawWireframe();
+    stringstream ss;
+    ss << "framerate: " << ofToString(ofGetFrameRate(), 0);
+    ofDrawBitmapString(ss.str(), 5, 10);
     
     // gui
     if (showGui) panel.draw();

@@ -49,7 +49,10 @@ public:
 	bool cloneReady;
 	Clone clone;
 	ofFbo srcFbo, maskFbo;
-	
+    // decolationFbo is the layer which is front of webcam and back from face, which means decolation without covering eye and mouse.
+    ofFbo decolationFbo, decolationMaskFbo;
+
+    
 	static const int lines [];
 	
 	long mousePressedTime;
@@ -63,4 +66,9 @@ public:
     ofxPanel panel;
     ofParameter<bool> showCamMeshWireFrame;
     ofParameter<float> mixStrength;
+    ofParameter<float> substitutionCamScale;
+    ofParameter<float> substitutionSrcScale;
+    
+    // image
+    ofImage fixedFrontImage;
 };
