@@ -41,7 +41,10 @@ void ofApp::update() {
     
 	cam.update();
 	if(cam.isFrameNew()) {
-		camTracker.update(toCv(cam));
+        ofImage mirroredCam;
+        mirroredCam.setFromPixels(cam.getPixels());
+        mirroredCam.mirror(false, true);
+		camTracker.update(toCv(mirroredCam));
 		cloneReady = camTracker.getFound();
 		if(cloneReady) {
             // cam
@@ -217,14 +220,14 @@ void ofApp::draw() {
         
         // 2. not using blur
         // draw webcam
-        cam.draw(0, 0);
+        cam.draw(camWidth, 0, -camWidth, camHeight); // mirrored
         
         // draw substitution
         src.bind();
         camMesh.draw();
         src.unbind();
 	} else {
-		cam.draw(0, 0);
+		cam.draw(camWidth, 0, -camWidth, camHeight); // mirrored
 	}
 	
 	if(!camTracker.getFound()) {
