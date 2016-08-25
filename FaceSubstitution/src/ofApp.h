@@ -27,10 +27,14 @@ public:
 
     ofVec2f rotateCoord(ofVec2f p,float rad);
     
+    
+    
 	ofxFaceTrackerThreaded camTracker;
     ofVideoGrabber cam;
     const float camWidth = 640;
     const float camHeight = 480;
+    float substitutionWidth;
+    float substitutionHeight;
 
 	ofxFaceTracker srcTracker;
 	ofImage src;
