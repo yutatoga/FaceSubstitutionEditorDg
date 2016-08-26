@@ -49,6 +49,7 @@ void ofApp::setup() {
     // event
     timeFaceDetection = 0;
     didEvent = false;
+    player.load("sound.mp3");
 }
 
 void ofApp::update() {
@@ -68,6 +69,7 @@ void ofApp::update() {
                     if (didEvent == false) {
                         // do event
                         enableBlurMix = false;
+                        player.play();
                         
                         didEvent = true;
                     }

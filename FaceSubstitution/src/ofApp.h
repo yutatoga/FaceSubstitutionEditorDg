@@ -78,4 +78,6 @@ public:
     float timeFaceDetection;
     bool didEvent;
     
+    // sound
+    ofSoundPlayer player;
 };
