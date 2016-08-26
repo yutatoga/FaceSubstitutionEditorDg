@@ -41,7 +41,7 @@ void ofApp::setup() {
     panel.add(enableBlurMix.set("enableBlurMix", false));
     panel.add(enableEvent.set("enableEvent", false));
     panel.add(enableFullScreenMainView.set("enableFullScreenMainView", false));
-    panel.add(mixStrength.set("mixStrength", 50, 0, 500));
+    panel.add(mixStrength.set("mixStrength", 45, 0, 500));
     panel.add(substitutionCamScale.set("substitutionCamScale", 2, 1, 10));
     panel.add(substitutionSrcScale.set("substitutionSrcScale", 1, 1, 10));
 
@@ -70,7 +70,7 @@ void ofApp::update() {
                     // faceTracking started
                     timeFaceDetection = ofGetElapsedTimef();
                     if (!player0.isPlaying()) player0.play();
-                } else if (ofGetElapsedTimef() - timeFaceDetection > 3) {
+                } else if (ofGetElapsedTimef() - timeFaceDetection > waintTimeForEvent) {
                     if (didEvent == false) {
                         // do event
                         enableBlurMix = false;
@@ -79,6 +79,9 @@ void ofApp::update() {
                         
                         didEvent = true;
                     }
+                } else {
+                    // after face detection and before event
+                    mixStrength = ofxeasing::map_clamp(ofGetElapsedTimef(), timeFaceDetection, timeFaceDetection + easingDuration, easingStartValue, easingEndValue, &ofxeasing::quad::easeIn);
                 }
             }
             

@@ -6,6 +6,7 @@
 #include "ofxFaceTracker.h"
 #include "ofxFaceTrackerThreaded.h"
 #include "ofxGui.h"
+#include "ofxEasing.h"
 
 #include <limits>
 
@@ -77,7 +78,12 @@ public:
     // event
     float timeFaceDetection;
     bool didEvent;
+    const float waintTimeForEvent = 3.0;
     
+    // easing
+    const float easingDuration = 3.0;
+    const float easingStartValue = 0.0;
+    const float easingEndValue = 45.0;
     // sound
     ofSoundPlayer player0, player1;
 };

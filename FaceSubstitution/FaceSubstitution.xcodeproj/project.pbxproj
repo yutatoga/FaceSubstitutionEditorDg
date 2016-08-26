@@ -230,6 +230,8 @@
 		B09FCFF976DCEACB7C7C8D4E /* optical_flow.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = optical_flow.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/superres/optical_flow.hpp; sourceTree = SOURCE_ROOT; };
 		B1579F602B98D48A6937B341 /* util.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = util.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/stitching/detail/util.hpp; sourceTree = SOURCE_ROOT; };
 		B1DCC53B17C50537AACC8DF0 /* reduce.hpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.h; fileEncoding = 30; name = reduce.hpp; path = ../../../addons/ofxOpenCv/libs/opencv/include/opencv2/gpu/device/reduce.hpp; sourceTree = SOURCE_ROOT; };
+		B2FB5C9F1D6FF29300D4043B /* easing_terms_of_use.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = easing_terms_of_use.html; sourceTree = "<group>"; };
+		B2FB5CA01D6FF29300D4043B /* ofxEasing.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxEasing.h; sourceTree = "<group>"; };
 		B2FD17821D6724F5002FA96A /* ofxBaseGui.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxBaseGui.cpp; sourceTree = "<group>"; };
 		B2FD17831D6724F5002FA96A /* ofxBaseGui.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ofxBaseGui.h; sourceTree = "<group>"; };
 		B2FD17841D6724F5002FA96A /* ofxButton.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ofxButton.cpp; sourceTree = "<group>"; };
@@ -771,6 +773,24 @@
 			name = stitching;
 			sourceTree = "<group>";
 		};
+		B2FB5C9D1D6FF29300D4043B /* ofxEasing */ = {
+			isa = PBXGroup;
+			children = (
+				B2FB5C9E1D6FF29300D4043B /* src */,
+			);
+			name = ofxEasing;
+			sourceTree = "<group>";
+		};
+		B2FB5C9E1D6FF29300D4043B /* src */ = {
+			isa = PBXGroup;
+			children = (
+				B2FB5C9F1D6FF29300D4043B /* easing_terms_of_use.html */,
+				B2FB5CA01D6FF29300D4043B /* ofxEasing.h */,
+			);
+			name = src;
+			path = ../../ofxEasing/src;
+			sourceTree = "<group>";
+		};
 		B2FD17801D6724F5002FA96A /* ofxGui */ = {
 			isa = PBXGroup;
 			children = (
@@ -811,6 +831,7 @@
 				2B86176FA97BFB2BEE1F2F83 /* ofxFaceTracker */,
 				A0B90D3B0ADB9C1716816714 /* ofxOpenCv */,
 				B2FD17801D6724F5002FA96A /* ofxGui */,
+				B2FB5C9D1D6FF29300D4043B /* ofxEasing */,
 			);
 			name = addons;
 			sourceTree = "<group>";
