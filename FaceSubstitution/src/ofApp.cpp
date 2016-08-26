@@ -23,6 +23,7 @@ void ofApp::setup() {
 	settings.height = camHeight;
 	maskFbo.allocate(settings);
 	srcFbo.allocate(settings);
+    mainViewFbo.allocate(settings);
     // decolation
     decolationMaskFbo.allocate(settings);
     decolationFbo.allocate(settings);
@@ -39,6 +40,7 @@ void ofApp::setup() {
     panel.add(showCamMeshWireFrame.set("showCamMeshWireFrame", false));
     panel.add(enableBlurMix.set("enableBlurMix", false));
     panel.add(enableEvent.set("enableEvent", false));
+    panel.add(enableFullScreenMainView.set("enableFullScreenMainView", false));
     panel.add(mixStrength.set("mixStrength", 50, 0, 500));
     panel.add(substitutionCamScale.set("substitutionCamScale", 2, 1, 10));
     panel.add(substitutionSrcScale.set("substitutionSrcScale", 1, 1, 10));
@@ -256,6 +258,10 @@ void ofApp::update() {
             maskPath.draw();
             decolationMaskFbo.end();
             
+            mainViewFbo.begin();
+            ofClear(0, 255);
+            mainViewFbo.end();
+            
             // decolation
             decolationFbo.begin();
             ofClear(0, 0, 0, 0);
@@ -297,9 +303,19 @@ void ofApp::draw() {
 	
 	if(src.getWidth() > 0 && cloneReady) {
         if (enableBlurMix) {
-            // 1. mix with blur
-            clone.draw(0, 0);
+            if(enableFullScreenMainView){
+                // 1. mix with blur
+                mainViewFbo.begin();
+                clone.draw(0, 0);
+                mainViewFbo.end();
+                mainViewFbo.draw(0, 0, ofGetWidth(), ofGetHeight());
+            } else {
+                // 1. mix with blur
+                clone.draw(0, 0);
+            }
         } else {
+            if (enableFullScreenMainView) mainViewFbo.begin();
+            
             // 2. not using blur
             // draw webcam
             cam.draw(camWidth, 0, -camWidth, camHeight); // mirrored
@@ -312,9 +328,21 @@ void ofApp::draw() {
             src.bind();
             camMesh.draw();
             src.unbind();
+
+            if (enableFullScreenMainView) {
+                mainViewFbo.end();
+                mainViewFbo.draw(0, 0, ofGetWidth(), ofGetHeight());
+            }
         }
 	} else {
-		cam.draw(camWidth, 0, -camWidth, camHeight); // mirrored
+        if (enableFullScreenMainView) {
+            mainViewFbo.begin();
+            cam.draw(camWidth, 0, -camWidth, camHeight); // mirrored
+            mainViewFbo.end();
+            mainViewFbo.draw(0, 0, ofGetWidth(), ofGetHeight());
+        } else {
+            cam.draw(camWidth, 0, -camWidth, camHeight); // mirrored
+        }
 	}
 	
 	if(!camTracker.getFound()) {
