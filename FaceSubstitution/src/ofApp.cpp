@@ -14,7 +14,6 @@ void ofApp::setup() {
 #endif
 	ofSetVerticalSync(true);
 	cloneReady = false;
-	
     cam.initGrabber(camWidth, camHeight);
     substitutionWidth = camWidth;
     substitutionHeight = camHeight;
@@ -39,12 +38,17 @@ void ofApp::setup() {
     panel.setup();
     panel.add(showCamMeshWireFrame.set("showCamMeshWireFrame", false));
     panel.add(enableBlurMix.set("enableBlurMix", false));
+    panel.add(enableEvent.set("enableEvent", false));
     panel.add(mixStrength.set("mixStrength", 50, 0, 500));
     panel.add(substitutionCamScale.set("substitutionCamScale", 2, 1, 10));
     panel.add(substitutionSrcScale.set("substitutionSrcScale", 1, 1, 10));
 
     // image
     fixedFrontImage.load("logo.png");
+    
+    // event
+    timeFaceDetection = 0;
+    didEvent = false;
 }
 
 void ofApp::update() {
@@ -56,6 +60,20 @@ void ofApp::update() {
 		camTracker.update(toCv(mirroredCam));
 		cloneReady = camTracker.getFound();
 		if(cloneReady) {
+            // event
+            if (enableEvent){
+                if (timeFaceDetection == 0) {
+                    timeFaceDetection = ofGetElapsedTimef();
+                } else if (ofGetElapsedTimef() - timeFaceDetection > 3) {
+                    if (didEvent == false) {
+                        // do event
+                        enableBlurMix = false;
+                        
+                        didEvent = true;
+                    }
+                }
+            }
+            
             // cam
             camMesh = camTracker.getImageMesh();
             camMesh.clearTexCoords();
@@ -299,6 +317,13 @@ void ofApp::draw() {
 	
 	if(!camTracker.getFound()) {
 		ofDrawBitmapStringHighlight("camera face not found", 5, cam.getHeight()-5);
+
+        // event
+        if (enableEvent) {
+            timeFaceDetection = 0;
+            enableBlurMix = true;
+            didEvent = false;
+        }
 	}
 	if(src.getWidth() == 0) {
 		ofDrawBitmapStringHighlight("drag an image here", ofGetWidth()*0.75 - 50, ofGetHeight()/2.0f);

@@ -66,10 +66,16 @@ public:
     ofxPanel panel;
     ofParameter<bool> showCamMeshWireFrame;
     ofParameter<bool> enableBlurMix;
+    ofParameter<bool> enableEvent;
     ofParameter<float> mixStrength;
     ofParameter<float> substitutionCamScale;
     ofParameter<float> substitutionSrcScale;
     
     // image
     ofImage fixedFrontImage;
+    
+    // event
+    float timeFaceDetection;
+    bool didEvent;
+    
 };
