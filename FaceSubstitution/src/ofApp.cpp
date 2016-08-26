@@ -359,7 +359,7 @@ void ofApp::draw() {
 		ofDrawBitmapStringHighlight("drag an image here", ofGetWidth()*0.75 - 50, ofGetHeight()/2.0f);
 	}
 	
-	if (src.getWidth() > 0) {
+	if (src.getWidth() > 0 && !enableFullScreenMainView) {
 		src.draw(xOffset, 0);
 	}
 	
@@ -407,12 +407,16 @@ void ofApp::draw() {
     
     //debug
     if (showCamMeshWireFrame) camMesh.drawWireframe();
-    stringstream ss;
-    ss << "framerate: " << ofToString(ofGetFrameRate(), 0);
-    ofDrawBitmapString(ss.str(), 5, 10);
     
     // gui
-    if (showGui) panel.draw();
+    if (showGui) {
+        panel.draw();
+        
+        // show frameRate
+        stringstream ss;
+        ss << "framerate: " << ofToString(ofGetFrameRate(), 0);
+        ofDrawBitmapString(ss.str(), 5, 10);
+    }
 }
 
 void ofApp::loadPoints(string filename) {
@@ -577,6 +581,9 @@ void ofApp::keyPressed(int key) {
 	ofBuffer buff;
 	
 	switch (key) {
+        case 'f':
+            ofToggleFullscreen();
+            break;
         case 'h': // hide or show gui
             showGui = !showGui;
             break;
