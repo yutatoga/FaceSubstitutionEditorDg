@@ -79,5 +79,5 @@ public:
     bool didEvent;
     
     // sound
-    ofSoundPlayer player;
+    ofSoundPlayer player0, player1;
 };

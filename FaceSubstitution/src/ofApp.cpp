@@ -51,7 +51,8 @@ void ofApp::setup() {
     // event
     timeFaceDetection = 0;
     didEvent = false;
-    player.load("sound.mp3");
+    player0.load("sound0.mp3");
+    player1.load("sound1.mp3");
 }
 
 void ofApp::update() {
@@ -66,12 +67,15 @@ void ofApp::update() {
             // event
             if (enableEvent){
                 if (timeFaceDetection == 0) {
+                    // faceTracking started
                     timeFaceDetection = ofGetElapsedTimef();
+                    if (!player0.isPlaying()) player0.play();
                 } else if (ofGetElapsedTimef() - timeFaceDetection > 3) {
                     if (didEvent == false) {
                         // do event
                         enableBlurMix = false;
-                        player.play();
+                        player0.stop();
+                        player1.play();
                         
                         didEvent = true;
                     }
@@ -355,52 +359,56 @@ void ofApp::draw() {
             didEvent = false;
         }
 	}
-	if(src.getWidth() == 0) {
-		ofDrawBitmapStringHighlight("drag an image here", ofGetWidth()*0.75 - 50, ofGetHeight()/2.0f);
-	}
 	
-	if (src.getWidth() > 0 && !enableFullScreenMainView) {
-		src.draw(xOffset, 0);
-	}
-	
-	if (srcPoints.size() > 0) {
-		for (int i = 0; i < sizeof(lines) / sizeof(int) - 1; i += 2) {
-			ofVec2f p0 = srcPoints[lines[i]];
-			ofVec2f p1 = srcPoints[lines[i+1]];
-			ofDrawLine(xOffset + p0[0], p0[1], xOffset + p1[0], p1[1]);
-		}
-	}
-	
-	ofFill();
-	for (int i = 0; i < srcPoints.size(); i++) {
-		ofVec2f p = srcPoints[i];
-		
-		ofSetColor(255,128,0);
-		ofDrawCircle(xOffset + p[0], p[1], 6);
-		
-		ofSetColor(255,255,255);
-		ofDrawCircle(xOffset + p[0], p[1], 4);
-	}
-	
-	for (int i = 0; i < selectedPoints.size(); i++) {
-		ofVec2f p = srcPoints[selectedPoints[i]];
-		
-		ofSetColor(255,255,255);
-		ofDrawCircle(xOffset + p[0], p[1], 6);
-		
-		ofSetColor(255,128,0);
-		ofDrawCircle(xOffset + p[0], p[1], 4);
-	}
-	ofSetColor(255,255,255);
-	
-	if (selectArea) {
-		int startX = selectAreaStart[0];
-		int startY = selectAreaStart[1];
-		
-		ofNoFill();
-		ofSetColor(255, 255, 255);
-		ofDrawRectangle(startX, startY, mouseX - startX, mouseY - startY);
-	}
+    // editor view
+    if (!enableFullScreenMainView) {
+        if(src.getWidth() == 0) {
+            ofDrawBitmapStringHighlight("drag an image here", ofGetWidth()*0.75 - 50, ofGetHeight()/2.0f);
+        }
+
+        if (src.getWidth() > 0) {
+            src.draw(xOffset, 0);
+        }
+
+        if (srcPoints.size() > 0 ) {
+            for (int i = 0; i < sizeof(lines) / sizeof(int) - 1; i += 2) {
+                ofVec2f p0 = srcPoints[lines[i]];
+                ofVec2f p1 = srcPoints[lines[i+1]];
+                ofDrawLine(xOffset + p0[0], p0[1], xOffset + p1[0], p1[1]);
+            }
+        }
+        
+        ofFill();
+        for (int i = 0; i < srcPoints.size(); i++) {
+            ofVec2f p = srcPoints[i];
+            
+            ofSetColor(255,128,0);
+            ofDrawCircle(xOffset + p[0], p[1], 6);
+            
+            ofSetColor(255,255,255);
+            ofDrawCircle(xOffset + p[0], p[1], 4);
+        }
+        
+        for (int i = 0; i < selectedPoints.size(); i++) {
+            ofVec2f p = srcPoints[selectedPoints[i]];
+            
+            ofSetColor(255,255,255);
+            ofDrawCircle(xOffset + p[0], p[1], 6);
+            
+            ofSetColor(255,128,0);
+            ofDrawCircle(xOffset + p[0], p[1], 4);
+        }
+        ofSetColor(255,255,255);
+        
+        if (selectArea) {
+            int startX = selectAreaStart[0];
+            int startY = selectAreaStart[1];
+            
+            ofNoFill();
+            ofSetColor(255, 255, 255);
+            ofDrawRectangle(startX, startY, mouseX - startX, mouseY - startY);
+        }
+    }
     
     // image
     fixedFrontImage.draw(0, 0);
@@ -586,6 +594,7 @@ void ofApp::keyPressed(int key) {
             break;
         case 'h': // hide or show gui
             showGui = !showGui;
+            showGui ? ofShowCursor() : ofHideCursor();
             break;
 		case 'q': // Read point locations from source image.
 			if(src.getWidth() > 0) {
